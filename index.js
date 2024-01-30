@@ -28,7 +28,7 @@ async function run() {
     //get all blogs
     app.get('/blogs', async (req, res) => {
       const query = {};
-      const cursor = blogsCollection.find(query).project({ name: 1 });
+      const cursor = blogsCollection.find(query);
       const blogs = await cursor.toArray();
       res.send(blogs);
     });
@@ -36,7 +36,22 @@ async function run() {
     //get all comments
     app.get('/comments', async (req, res) => {
       const query = {};
-      const cursor = commentsCollection.find(query).project({ name: 1 });
+      const cursor = commentsCollection.find(query);
+      const comments = await cursor.toArray();
+      res.send(comments);
+    });
+
+    //get individual comments
+    app.get('/comment/:blogId', async (req, res) => {
+      const blogId = req.params.blogId;
+      console.log(blogId);
+
+      if (!blogId) {
+        return res.status(400).send({ message: 'Blog ID is required' });
+      }
+
+      const query = { blogId: parseInt(blogId, 10) };
+      const cursor = commentsCollection.find(query);
       const comments = await cursor.toArray();
       res.send(comments);
     });
