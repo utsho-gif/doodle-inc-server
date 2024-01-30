@@ -42,18 +42,31 @@ async function run() {
     });
 
     //get individual comments
-    app.get('/comment/:blogId', async (req, res) => {
-      const blogId = req.params.blogId;
-      console.log(blogId);
+    app.get('/comments/:blogId', async (req, res) => {
+      const blogId = parseInt(req.params.blogId, 10);
 
       if (!blogId) {
         return res.status(400).send({ message: 'Blog ID is required' });
       }
 
-      const query = { blogId: parseInt(blogId, 10) };
-      const cursor = commentsCollection.find(query);
-      const comments = await cursor.toArray();
-      res.send(comments);
+      try {
+        const blog = await blogsCollection.findOne(
+          { id: blogId },
+          { projection: { _id: 0, body: 1, title: 1 } }
+        );
+
+        if (!blog) {
+          return res.status(404).send({ message: 'Blog not found' });
+        }
+
+        const comments = await commentsCollection
+          .find({ blogId: blogId })
+          .toArray();
+
+        res.send({ blog, comments });
+      } catch (error) {
+        res.status(500).send({ message: error.message });
+      }
     });
   } finally {
   }
